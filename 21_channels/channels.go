@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"time"
 	// "math/rand"
 	// "time"
 )
@@ -57,29 +56,52 @@ import (
 // 	<- done
 // }
 
-// Buffer Channel
-func emailSender(emailChan chan string, done chan bool) {
-	defer func ()  {
-		done <- true
-	}()
+// Buffer Channel (Chan Type Safety)
+// func emailSender(emailChan <- chan string, done chan <- bool) {
+// 	defer func ()  {
+// 		done <- true
+// 	}()
 
-	for email := range emailChan {
-		fmt.Println("Sending Mail to", email)
-		time.Sleep(time.Second)
-	}
-}
+// 	for email := range emailChan {
+// 		fmt.Println("Sending Mail to", email)
+// 		time.Sleep(time.Second)
+// 	}
+// }
 
+// func main() {
+// 	emailChan := make(chan string, 100)
+// 	done := make(chan bool)
+
+// 	for i := 0; i < 10; i++ {
+// 		emailChan <- fmt.Sprintf("%d@gmail.com", i)
+// 	}
+// 	fmt.Println("Done Adding Emails....")
+
+// 	go emailSender(emailChan, done)
+
+// 	close(emailChan)			// Highly Important thing
+// 	<- done
+// }
+
+
+// Multiple Channels
 func main() {
-	emailChan := make(chan string, 100)
-	done := make(chan bool)
+	chan1 := make(chan int)
+	chan2 := make(chan string)
 
-	for i := 0; i < 10; i++ {
-		emailChan <- fmt.Sprintf("%d@gmail.com", i)
+	go func() {
+		chan1 <- 10	
+	} ()
+	go func() {
+		chan2 <- "ping"	
+	} ()
+
+	for i := 0; i < 2; i++ {
+		select {
+		case chan1Val := <- chan1:
+			fmt.Println("Received Data for 1", chan1Val)
+		case chan2Val := <- chan2:
+			fmt.Println("Received Data for 2", chan2Val)
+		}
 	}
-	fmt.Println("Done Adding Emails....")
-
-	go emailSender(emailChan, done)
-
-	close(emailChan)			// Highly Important thing
-	<- done
 }
